@@ -1,0 +1,11 @@
+{
+    "root" : ".",
+    "n_ensembles": 100,
+    "gamma" : 0.01,
+    "sigma" : 0.1,
+    "batch_size" : 64,
+    "seed": 0,
+    "checkpoints" : 500,
+    "repetitions" : 8,
+    "epochs": 50
+}
