@@ -1,5 +1,7 @@
 from conv_net import ConvNet
 from torchvision import datasets, transforms
+from mpl_toolkits.axes_grid1.inset_locator import zoomed_inset_axes
+from mpl_toolkits.axes_grid1.inset_locator import mark_inset
 
 import json
 import matplotlib.pyplot as plt
@@ -156,6 +158,81 @@ def adaptive_test_loss_splitted(normal_loss, dynamic_loss):
                         hspace=0.1, wspace=0.388)
     fig.savefig('dynamic_changes_splitted.pdf', format='pdf',
                 bbox_inches='tight')
+    plt.show()
+
+
+def plot_accuracy_all_iteration_std(startswith, inset=True, path='.'):
+    fig, ax1 = plt.subplots()
+    for starts in startswith:
+        if starts.startswith('SGD'):
+            mu_sgd, std_sgd = _load_pt_files(starts, path)
+            mu_sgd = np.insert(mu_sgd, 0, 0)
+            std_sgd = np.insert(std_sgd, 0, 0)
+            mu_sgd = 100 - mu_sgd
+        elif starts.startswith('acc'):
+            mu_enkf, std_enkf = _load_pt_files(starts, path)
+            mu_enkf = np.insert(mu_enkf, 0, 0)
+            std_enkf = np.insert(std_enkf, 0, 0)
+            mu_enkf = 100 - np.array(mu_enkf)
+
+    # SGD
+    ax1.plot(mu_sgd[: len(mu_enkf)], 'o-', label='SGD')
+    lower_bound = (mu_sgd - std_sgd)[: len(mu_enkf)]
+    upper_bound = (mu_sgd + std_sgd)[: len(mu_enkf)]
+    ax1.fill_between(range(len(mu_enkf)), lower_bound, upper_bound, alpha=.3)
+    # Enkf
+    p3, = ax1.plot(mu_enkf, 'o-', label='EnKF')
+    lower_bound = (mu_enkf - std_enkf)
+    upper_bound = (mu_enkf + std_enkf)
+    ax1.fill_between(range(len(mu_enkf)), lower_bound, upper_bound, alpha=.3)
+
+    ax1.set_ylabel('Test Error in %')
+    ax1.set_xlabel('Iteration')
+    iters = range(0, 8000, 500)
+    ax1.set_xticks(range(len(iters)))
+    ax1.set_xticklabels(iters)
+    plt.xlim(0, len(iters))
+    plt.legend(prop={'size': 11}, loc='best')
+    tkl = ax1.xaxis.get_ticklabels()
+    if inset:
+        _plot_std_zoomed_inset(ax1, p3, mu_enkf, lower_bound, upper_bound)
+    for label in tkl[:: 2]:
+        label.set_visible(False)
+    plt.savefig('all_test_error_iteration.pdf',
+                bbox_inches='tight', pad_inches=0.1)
+    plt.show()
+
+
+def _plot_std_zoomed_inset(ax, pl, mu, lower_bound, upper_bound):
+    axins = zoomed_inset_axes(
+        ax, zoom=5., bbox_to_anchor=(0.4, 0.4),
+        bbox_transform=plt.gcf().transFigure)
+    axins.plot(mu, 'o-', c=pl.get_color())
+    axins.fill_between(range(len(mu)), lower_bound,
+                       upper_bound, alpha=.3, color=pl.get_color())
+    plt.setp(axins.get_xticklabels(), visible=False)
+    plt.setp(axins.get_yticklabels(), visible=False)
+    axins.set_xlim(5, 6.)
+    axins.set_ylim(4, 5.5)
+    mark_inset(ax, axins, loc1=3, loc2=1, fc="none", ec="0.5")
+
+
+def _load_pt_files(startswith, path='.'):
+    """
+    Loads the pt files which should start with `acc` (EnKF) `SGD` and end with `.pt`
+    Returns mean test_accuracies and standard deviations as np.arrays
+    """
+    files = []
+    for file in os.listdir(path):
+        if file.startswith(startswith) and file.endswith('.pt'):
+            if file.startswith('acc'):
+                f = os.path.join(path, file)
+                files.append(np.array(torch.load(f))[:, 0])
+            else:
+                f = os.path.join(path, file)
+                files.append(torch.load(f))
+    files = np.array(files)
+    return files.mean(0), files.std(0)
 
 
 def test(net, test_loader_mnist):
@@ -256,10 +333,15 @@ if __name__ == '__main__':
             test_accuracy.append(tsa)
             test_loss.append(tsl)
         torch.save((test_accuracy, test_loss), 'acc_loss.pt')
-    # plot test error for EnKF = Figure 8
+    # plot figure 1
+    plot_accuracy_all_iteration_std(
+        ['SGD', 'acc'], path='test_losses/')
+    # plot test error for EnKF = Figure 8 a (left)
     plot_different_accuracies(range(0, 8000, 500))
-    # plot test error with different acitvation functions = Figure 11
+    # plot test error with different acitvation functions = Figure 8b (right)
     plot_act_func_accuracies((range(0, 8000, 500)))
-    # plot_test_error(torch.load('acc_loss.pt')[0], range(0, 8000, 500))
     # plot test errors for SGD and ADAM = Figure 5
     plot_error_sgd_adam(torch.load('test_acc.pt'))
+    # plot for figure 10
+    adaptive_test_loss_splitted(torch.load('acc_loss.pt'),
+                                torch.load('dyn_change.pt'))

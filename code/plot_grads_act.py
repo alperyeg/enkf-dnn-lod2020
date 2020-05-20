@@ -211,85 +211,30 @@ def activations_mean_std_error(act_func, errorevery=10, savepath=''):
     plt.show()
 
 
-def weight_distributions_per_layer(iterations,
-                                   suptitle='Ensembles - Weights',
-                                   bins=None,
-                                   savepath='',
-                                   rand=False):
-    fig, axes = plt.subplots(1, len(iterations), sharey=True)
-    # fig.tight_layout()
-    if rand:
-        rnd = np.random.randint(0, len(iterations[0][1]['ensemble']))
-    for i, (key, params) in enumerate(iterations.items()):
-        if rand:
-            dist = np.array(params['ensemble'])[rnd],
-        else:
-            dist = np.array(params['ensemble']).mean(0),
-        ax = axes[i]
-        sns.distplot(dist, bins=bins, color='b', ax=ax)
-        ax.set_title('{}'.format(
-            key.strip('conv_params_ .pt')))
-    if rand:
-        fig.suptitle(suptitle + '\n' + 'Ensemble {}'.format(rnd))
-    else:
-        fig.suptitle(suptitle)
-    for a in axes:
-        tkl = a.xaxis.get_ticklabels()
-        [label.set_visible(False) for label in tkl[::2]]
-
-    axes[0].set_ylabel('Counts')
-    axes[1].set_xlabel('Ensemble Distribution')
-    plt.savefig(savepath, bbox_inches='tight', pad_inches=0.1)
-    plt.show()
-
-
-def load_iter_act(path, startswith):
-    d = collections.OrderedDict()
-    files = []
-    for file in os.listdir(path):
-        if file.startswith(startswith):
-            files.append(file)
-
-    files = sorted(files, key=lambda x: int(x.strip('conv_params .pt')))
-    for file in files:
-        d[file] = torch.load(file)
-    return d
-
-
 if __name__ == '__main__':
     path = "."
     # Plots gradient and activation function related figures for SGD and Adam
     for opt in ['SGD', 'Adam']:
-        # Figure 3a & 6a
+        # Figure 3
         act_funct = np.load(os.path.join(
             path, opt, 'act_func.npy'), allow_pickle=True).item()
         activation_functions_mean_std(act_funct, savepath=os.path.join(
             path, '{}_activation_mean_std.pdf'.format(opt)))
 
-        # Figure 3b & 6b
+        # Figure 4
         gradients = np.load(os.path.join(
             path, opt, 'gradients.npy'), allow_pickle=True).item()
         gradients_dist_layer(gradients, opt, savepath=os.path.join(
             path, '{}_grad_distribution_per_layer.pdf'.format(opt)))
 
-        # Figure 4a & 7a
+        # Figure 6
         gradients = load_epochs_grad_act(os.path.join(
             path, opt), 'gradients_ep')
         gradients_per_epoch(
             gradients, savepath='{}_grads_per_epoch.pdf'.format(opt))
 
-        # Figure 4b & 7b
+        # Figure 7
         acts = load_epochs_grad_act(os.path.join(
             path, opt), 'act_func_ep')
         activation_dist_per_epoch(
             acts, savepath='{}_activation_mean_std_per_epoch.pdf'.format(opt))
-
-    # EnKF plots for activation functions
-    # Figure 9
-    activations = load_iter_act('.', startswith='conv_params_')
-    weight_distributions_per_layer(activations,
-                                   savepath='enkf_dist_ensembles_iterations.pdf',
-                                   rand=False, suptitle='')
-    # Figure 10
-    activations_mean_std_error(torch.load('conv_params.pt')['act_func'],
-                               savepath='enkf_act_func_mean_std.pdf')

@@ -29,7 +29,7 @@ For plotting:
 ### <a id="config"></a> Configuration file
 The config file `config.json` sets the parameters of the method:
 
-* `root`: The directory where pytorch's dataloader will download and save the MNIST dataset. Default is `.` the actual folder . 
+* `root`: The directory where pytorch's dataloader will download and save the MNIST dataset. Default is `.` the actual folder. 
 * `n_ensembles`:  Number of ensembles. Default is `5000`.
 * `gamma`: Scales the identity matrix with a small scalar. Default is `0.01`
 * `sigma`: Sigma of the Gaussian initialization. Default is `0.1`
@@ -48,11 +48,12 @@ All python files and the configuration file should be in the same directory. `en
 ### <a name="gd-run"></a> Creating the Plots
 Two plotting scripts with corresponding data are supplied:
 
-* `plot_accuracy.py`: Plots the test errors, i.e., Figure 5, 8, 11 
+* `plot_accuracy.py`: Plots the test errors, i.e., Figure 1, 5, 8, 10 
+  * Figure 1 needs the files `SGD` to be in folder in `test_losses` 
   * Figure 5 needs the file `test_acc.pt`
   * Figure 8 needs the files `acc_loss.pt`, `more_ensembles_acc_loss.pt`, `less_ensembles_acc_loss.pt`
   * Figure 11 needs the files `acc_loss.pt`, `relu_acc_loss.pt`, `tanh_acc_loss.pt`
-* `plot_grads_acts.py`: Plots the gradient and activation function values, i.e., Figure 3, 4, 6, 7, 9, 10
+* `plot_grads_acts.py`: Plots the gradient and activation function values, i.e., Figure 3, 4, 6, 7
   * Figure 3a & 6a need the file `act_func.npy`
   * Figure 3b & 6b need the file `gradients.npy`
   * Figure 4a & 7a need the files `gradients_ep*.npy`
