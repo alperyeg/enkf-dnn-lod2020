@@ -61,9 +61,5 @@ Two plotting scripts with corresponding data are supplied:
   * Figure 7 need the files `act_func_ep*.npy`
   * Figure 9 needs the files `dyn_change.pt` and `acc_loss.pt`
   
-All data files can be downloaded [here](https://mega.nz/#!zM42XQRS!J4FFH-Rh2mnUMgSUghiBB6XzHty0mnBaFFSTgEuY16M)
+All data files can be downloaded [here](https://mega.nz/file/vEoGFQCB)
 The contents of the folder can be merged into the code folder. 
-
- 
-
-
