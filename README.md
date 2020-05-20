@@ -3,6 +3,8 @@
 ## Description 
 The Ensemble Kalman Filter(EnKF) can be used as an alternative optimizer when training neural networks, especially in cases where gradient information is not available or backpropagation not applicable.
 
+![all_test_error_std](figures/all_test_error_iteration.pdf)
+
 ## Prerequisites
 To run the experiments please see [code/README.md](code/README.md)
 

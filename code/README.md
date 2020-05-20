@@ -49,18 +49,17 @@ All python files and the configuration file should be in the same directory. `en
 Two plotting scripts with corresponding data are supplied:
 
 * `plot_accuracy.py`: Plots the test errors, i.e., Figure 1, 5, 8, 10 
-  * Figure 1 needs the files `SGD` to be in folder in `test_losses` 
+  * Figure 1 needs the files ` SGD_test_accuracy_ep*.pt` and `acc_losses_ep*.pt` to be in folder in `test_losses` 
   * Figure 5 needs the file `test_acc.pt`
-  * Figure 8 needs the files `acc_loss.pt`, `more_ensembles_acc_loss.pt`, `less_ensembles_acc_loss.pt`
-  * Figure 11 needs the files `acc_loss.pt`, `relu_acc_loss.pt`, `tanh_acc_loss.pt`
+  * Figure 8a needs the files `acc_loss.pt`, `more_ensembles_acc_loss.pt`, `less_ensembles_acc_loss.pt`
+  * Figure 8b needs the files `acc_loss.pt`, `relu_acc_loss.pt`, `tanh_acc_loss.pt`
+  * Figure 10 needs the file ``
 * `plot_grads_acts.py`: Plots the gradient and activation function values, i.e., Figure 3, 4, 6, 7
-  * Figure 3a & 6a need the file `act_func.npy`
-  * Figure 3b & 6b need the file `gradients.npy`
-  * Figure 4a & 7a need the files `gradients_ep*.npy`
-  * Figure 4b & 7b need the files `act_func_ep*.npy`
-  * Figure 9 needs the files `conv_params_*.pt`
-  * Figure 10 needs the file `conv_params.pt`
-  * Figure 1 is highlighting parts of Figure 5 and 8.
+  * Figure 3 needs the file `act_func.npy`
+  * Figure 4 needs the file `gradients.npy`
+  * Figure 6 needs the files `gradients_ep*.npy`
+  * Figure 7 need the files `act_func_ep*.npy`
+  * Figure 9 needs the files `dyn_change.pt` and `acc_loss.pt`
   
 All data files can be downloaded [here](https://mega.nz/#!zM42XQRS!J4FFH-Rh2mnUMgSUghiBB6XzHty0mnBaFFSTgEuY16M)
 The contents of the folder can be merged into the code folder. 
