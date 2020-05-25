@@ -26,6 +26,8 @@ For plotting:
 * matplotlib>=3.0.0
 * seaborn>=0.9.0
 
+See also [requirements.txt](./requirements.txt)
+
 ### <a id="config"></a> Configuration file
 The config file `config.json` sets the parameters of the method:
 
