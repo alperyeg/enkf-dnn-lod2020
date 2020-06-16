@@ -364,6 +364,7 @@ if __name__ == '__main__':
     torch.manual_seed(seed)
     batch_size = config['batch_size']
     # for dynamic change
+    dynamic_change = config['dynamic_change']
     eps = config['eps']  # epsilon
     reps = config['reps']  # repetition
     lower_bound = config['lower_bound']
@@ -433,7 +434,7 @@ if __name__ == '__main__':
                                     nn.CrossEntropyLoss(reduction='sum')))
             torch.save(test_losses, 'test_losses_{}.pt'.format(i))
             # Test for dynamic changes
-            if i > 0:
+            if i > 0 and dynamic_change:
                 tdc = test_dynamic_change(test_losses, eps)
                 if tdc:
                     diff = test_losses[-1] - test_losses[-2]
