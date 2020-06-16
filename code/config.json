@@ -7,5 +7,9 @@
     "seed": 0,
     "checkpoints" : 500,
     "repetitions" : 8,
-    "epochs": 50
+    "epochs": 50,
+    "eps" : 90,
+    "reps" : 8,
+    "lower_bound": 1000,
+    "upper_bound":  9000
 }

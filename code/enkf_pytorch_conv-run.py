@@ -3,6 +3,7 @@ from enkf_pytorch import EnsembleKalmanFilter as EnKF
 from enkf_pytorch import _encode_targets
 from numpy.linalg import norm
 
+import copy
 import json
 import numpy as np
 import torch
@@ -327,6 +328,28 @@ def test(net, iteration, test_loader_mnist, criterion):
     return ta, tl
 
 
+def test_dynamic_change(ta, eps):
+    """
+    Test if `test_accuracy_i` is better than `test_accuracy_i-1`
+    :param ta: test accuracy list of actual and previous run
+    """
+    if ta[-1] > eps:
+        if ta[-1] >= ta[-2]:
+            return True
+        elif ta[-1] < ta[-2]:
+            return False
+    return -1
+
+
+def save_dynamic_changes(ta, n_ensembles, reps, it, rng, dyn_c):
+    dyn_c['model_reps'].append(reps)
+    dyn_c['n_ensembles'].append(n_ensembles)
+    dyn_c['iteration'].append(it)
+    dyn_c['test_loss'].append((ta[-2], ta[-1]))
+    dyn_c['rng'].append(rng)
+    return dyn_c
+
+
 if __name__ == '__main__':
     # path to data
     root = config['root']
@@ -340,6 +363,14 @@ if __name__ == '__main__':
     np.random.seed(seed)
     torch.manual_seed(seed)
     batch_size = config['batch_size']
+    # for dynamic change
+    eps = config['eps']  # epsilon
+    reps = config['reps']  # repetition
+    lower_bound = config['lower_bound']
+    upper_bound = config['upper_bound']
+    dyn_change = {'model_reps': [], 'n_ensembles': [], 'iteration': [],
+                  'rng': 60000, 'test_loss': []}
+
     # init model
     model = MnistOptimizee(root=root, batch_size=batch_size,
                            n_ensembles=n_ensembles).to(device)
@@ -351,7 +382,8 @@ if __name__ == '__main__':
                 n_batches=1)
     # len dataset divided by batch size and repetitions
     rng = int(60000 / batch_size * 8)
-    for i in range(rng):
+    i = 0
+    while i < rng:
         model.generation = i + 1
         if i == 0:
             try:
@@ -400,6 +432,51 @@ if __name__ == '__main__':
             test_losses.append(test(model.conv_net, i, model.data_loader.test_mnist_loader,
                                     nn.CrossEntropyLoss(reduction='sum')))
             torch.save(test_losses, 'test_losses_{}.pt'.format(i))
+            # Test for dynamic changes
+            if i > 0:
+                tdc = test_dynamic_change(test_losses, eps)
+                if tdc:
+                    diff = test_losses[-1] - test_losses[-2]
+                    # reduce n_ensembles by 1000, same for the model when the
+                    # difference it not that big
+                    if n_ensembles > lower_bound and diff <= 1:
+                        n_ensembles -= 1000
+                        enkf.ensemble_size = n_ensembles
+                        model.n_ensembles = n_ensembles
+                    # reduce model generation change
+                    if reps > 0:
+                        reps -= 1
+                        model.generation_change = reps
+                        # change also loop range
+                        rng = 60000 / batch_size * reps
+                    # Save changes in dictionary
+                    dyn_change = save_dynamic_changes(ta=test_losses,
+                                                      n_ensembles=n_ensembles,
+                                                      reps=reps, it=i, rng=rng,
+                                                      dyn_c=dyn_change)
+                elif tdc != -1 and tdc is False:
+                    diff = test_losses[-2] - test_losses[-1]
+                    # increase n_ensembles by 1000, same for the model when
+                    # the difference bigger than 1.
+                    if n_ensembles < upper_bound and diff > 1.:
+                        n_ensembles += 1000
+                    enkf.ensemble_size = n_ensembles
+                    model.n_ensembles = n_ensembles
+                    # increase model generation change
+                    if model.generation_change < 8:
+                        reps += 1
+                        model.generation_change = reps
+                        # change also loop range
+                        rng = 60000 / batch_size * reps
+                    # Save changes in dictionary
+                    dyn_change = save_dynamic_changes(ta=test_losses,
+                                                      n_ensembles=n_ensembles,
+                                                      reps=reps, it=i, rng=rng,
+                                                      dyn_c=dyn_change)
+                print('Dynamic changes: ', dyn_change)
+
+        # Increase index
+        i += 1
 
     param_dict = {
         'train_pred': model.train_pred,
@@ -420,6 +497,6 @@ if __name__ == '__main__':
     }
     torch.save(param_dict, 'conv_params.pt')
     act_func[str(i)] = {'train_act': copy.deepcopy(model.act_func),
-                        'test_act':copy.deepcopy(model.test_act_func)}
+                        'test_act': copy.deepcopy(model.test_act_func)}
     torch.save(act_func, 'act_func.pt')
     torch.save(test_losses, 'test_losses.pt')
