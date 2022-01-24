@@ -11,3 +11,16 @@ The Ensemble Kalman Filter(EnKF) can be used as an alternative optimizer when tr
 ## Prerequisites
 To run the experiments please see [code/README.md](code/README.md)
 
+## Citation
+If you use the code or data in your research or just need the citation please cite the work as: 
+
+```latex
+@inproceedings{yegenoglu2020ensemble,
+  title={Ensemble Kalman Filter Optimizing Deep Neural Networks: An Alternative Approach to Non-performing Gradient Descent},
+  author={Yegenoglu, Alper and Krajsek, Kai and Pier, Sandra Diaz and Herty, Michael},
+  booktitle={International Conference on Machine Learning, Optimization, and Data Science},
+  pages={78--92},
+  year={2020},
+  organization={Springer}
+}
+```
